@@ -1,0 +1,17 @@
+{
+  "ceo": {
+    "name": "Dana, CEO",
+    "role": "admin",
+    "scope": null
+  },
+  "alice": {
+    "name": "Alice, Head of Women's merchandising",
+    "role": "analyst",
+    "scope": {"department": ["Women"]}
+  },
+  "bob": {
+    "name": "Bob, Denim & Outerwear category manager",
+    "role": "analyst",
+    "scope": {"category": ["Jeans", "Outerwear & Coats"]}
+  }
+}

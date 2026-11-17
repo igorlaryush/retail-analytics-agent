@@ -1,0 +1,11 @@
+langgraph>=1.0,<2
+langgraph-checkpoint-sqlite>=2,<4  # durable checkpoints (PostgresSaver in production)
+langchain-core>=1.0,<2
+langchain-google-genai>=4.0,<5
+langchain-openai>=1.0,<2  # OpenRouter provider
+google-cloud-bigquery>=3.20,<4
+sqlglot>=26,<31
+rich>=13
+pytest>=8
+# Optional: deep-dive tracing UI (enabled automatically when LANGFUSE_* env vars are set)
+# langfuse>=3
