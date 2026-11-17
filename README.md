@@ -7,6 +7,37 @@ write reports with action items, and manage a Saved Reports library.
 - **Full design (HLD, diagrams, per-requirement explanation):** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - **Stack:** Python 3.11+, LangGraph, Gemini (AI Studio directly, or any model via OpenRouter), BigQuery, sqlglot, SQLite, Rich
 
+## For reviewers
+
+**Run it** (needs a Gemini key and `gcloud auth application-default login`; details in [Setup](#setup)):
+
+```bash
+pip install -r requirements.txt && export GEMINI_API_KEY=... GOOGLE_CLOUD_PROJECT=...
+python main.py --user ceo      # or --user bob: sees only Jeans + Outerwear & Coats
+```
+
+**Where to look**
+
+| What | Where |
+|---|---|
+| HLD: architecture diagram, services, data flow, every requirement | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| Requirement → code map for the prototype | [How the prototype meets the required capabilities](#how-the-prototype-meets-the-required-capabilities) |
+| Real transcripts (live BigQuery) | [Example run](#example-run) |
+| Golden-set evals + CI regression gate | [Quality gate](#quality-gate-golden-set-evals-in-ci), [`evals/`](evals), [CI workflow](.github/workflows/ci.yml) |
+
+**Key decisions**
+- **Security does not depend on the LLM.** SQL is parsed into an AST (sqlglot): read-only, 4 tables, no PII columns.
+  Every table is rewritten into a subquery filtered to the user's products, so the model cannot bypass the scope.
+- **Deletion needs a human.** LangGraph `interrupt()` with a durable checkpoint. Only the user's "yes" resumes the
+  graph, and only the shown reports the user owns are deleted. A pending confirmation survives a process restart.
+- **Bounded self-correction.** Free BigQuery dry runs catch errors before any cost. At most 3 failed attempts per
+  question, plus a bytes cap, a circuit breaker and a fallback model.
+- **Measured, not assumed.** 14 golden cases (answer accuracy + safety) score 100 % / 100 % on Gemini 4 Hydrogen,
+  via AI Studio and OpenRouter. CI fails on any safety miss or an accuracy regression.
+
+**Verified live:** BigQuery multi-step analyses, reports, scoped users, PII and injection refusals, warehouse
+outage, model fallback, delete confirm/cancel, restart recovery, and a clean install on Python 3.11.
+
 ```mermaid
 flowchart LR
   U[CLI user] --> G[LangGraph agent<br/>Gemini + fallback model]
